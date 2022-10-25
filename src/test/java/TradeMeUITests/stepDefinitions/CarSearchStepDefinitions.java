@@ -1,18 +1,15 @@
 package TradeMeUITests.stepDefinitions;
-import TradeMeUITests.common.BasePage;
+
 import TradeMeUITests.common.ConfigFileReader;
 import TradeMeUITests.common.FileReaderManager;
-import TradeMeUITests.common.Page;
 import TradeMeUITests.common.driverFactory.DriverManager;
 import TradeMeUITests.pageObjects.CarSearchPage;
-import TradeMeUITests.pageObjects.*;
 import TradeMeUITests.testDataObjects.CarSearchDetails;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -27,7 +24,7 @@ public class CarSearchStepDefinitions {
     CarSearchDetails carSearchDetails;
     ConfigFileReader configFileReader;
     String environment;
-
+    public static int expectedNumberOfCars;
 
     public CarSearchStepDefinitions()
     {
@@ -35,24 +32,37 @@ public class CarSearchStepDefinitions {
 
         configFileReader = FileReaderManager.getInstance().getConfigReader();
         environment = configFileReader.getEnvironment().toString().toLowerCase();
+        driver = DriverManager.getDriver();
+        carSearchPage = new CarSearchPage(driver);
     }
-    @Then(": Verify the number of cars returned in the search list")
-    public void verifyNumberOfCarsReturnedInTheSearchList() {
-        carSearchPage.displayTotalNumberofCars();
-
+    @Then(": Verify the number of cars returned in the search list for (.*)$")
+    public void verifyNumberOfCarsReturnedInTheSearchList(String carmake) throws IOException, InvalidFormatException {
+        //CarSearchDetails carSearchDetails = new CarSearchDetails(rowNumber); Can be pulled from spread sheet
+        switch (carmake)
+        {
+            case "Ferrari":
+                expectedNumberOfCars = Integer.parseInt(configFileReader.getConfigValue("totalNoOfFerrari"));
+                break;
+            case "BMW":
+                expectedNumberOfCars = Integer.parseInt(configFileReader.getConfigValue("totalNoOfBMW"));
+                break;
+            case "Mazda":
+                expectedNumberOfCars = Integer.parseInt(configFileReader.getConfigValue("totalNoOfMazda"));
+                break;
+            case "Honda":
+                expectedNumberOfCars = Integer.parseInt(configFileReader.getConfigValue("totalNoOfHonda"));
+                break;
+            default:
+                break;
+        }
+        int actualItems = carSearchPage.totalNumberofCarsDisplayed();
+        Assert.assertEquals(actualItems, expectedNumberOfCars);
     }
 
-    @Then(": Cars are listed in the search list for (.*)$")
-    public void carsListedInTheSearchListForRowNumber(int rowNumber) throws IOException, InvalidFormatException {
-        CarSearchDetails carSearchDetails = new CarSearchDetails(rowNumber);
-        Assert.assertTrue(carSearchPage.checkForCarDetailsPresent(carSearchDetails.GetCarMakes()));
-    }
-
-    @When(": User selects the car make from Car Details Excel Sheet for (.*)$")
-    public void userSelectsTheCarMakeForRowNumber(int rownumber) throws IOException, InvalidFormatException {
-        CarSearchDetails carSearchDetails = new CarSearchDetails(rownumber);
-        carSearchPage.setCarMake(carSearchDetails.GetCarMakes());
-
+     @When(": User selects the car make from Car Details Excel Sheet for (.*)$")
+    public void userSelectsTheCarMakeForRowNumber(String carmake) throws IOException, InvalidFormatException {
+        //CarSearchDetails carSearchDetails = new CarSearchDetails(rowNumber); Can be retrieved from SpreadSheer
+        carSearchPage.setCarMake(carmake);
     }
 
     @And(": Click on Search button")
@@ -70,7 +80,9 @@ public class CarSearchStepDefinitions {
 
     @Then(": Verify the number of available car makes")
     public void verifyNumberOfAvailableCarMakes() {
-        carSearchPage.verifyNumberofCarMakes();
+        int expectedItems = Integer.parseInt(configFileReader.getConfigValue("carMakesAvailable"));
+        int actualItems = carSearchPage.verifyNumberofCarMakes();
+        Assert.assertEquals(actualItems, expectedItems);
     }
 
     @When(": User selects the Make dropdown")
@@ -99,8 +111,6 @@ public class CarSearchStepDefinitions {
 
     @Given(": User at the home page")
     public void homePage() {
-        driver = DriverManager.getDriver();
-        carSearchPage = new CarSearchPage(driver);
         carSearchPage.GoToHomePage(configFileReader.getApplicationUrl());
     }
 

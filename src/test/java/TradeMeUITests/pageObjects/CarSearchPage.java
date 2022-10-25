@@ -8,6 +8,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.Select;
 import java.time.Duration;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CarSearchPage extends BasePage{
     By motorSearchLink = By.xpath("/html/body/tm-root/div[1]/main/div/tm-dynamic-homepage/tm-homepage-search-header/nav/div[2]/ul/li[3]/a");
@@ -26,7 +29,7 @@ public class CarSearchPage extends BasePage{
     {
         getClickableElement(motorSearchLink).click();
     }
-
+    public int totalCars;
     public void selectCarMake()
     {
        // getClickableElement(this.carMakeDropDown).click();
@@ -56,18 +59,10 @@ public class CarSearchPage extends BasePage{
         wait.until(ExpectedConditions.urlContains(motorPageUrl));
         return driver.getCurrentUrl();
     }
-    public void verifyNumberofCarMakes() {
-
-       // Select carMakeDropDown = new Select(driver.findElement(By.id("ddlTablePay")));
+    public int verifyNumberofCarMakes() {
         Select carMakeDropDown = new Select(getElement(this.carMakeDropDown));
         List<WebElement> optionsCount = carMakeDropDown.getOptions();
-        int itemSize = optionsCount.size();
-        System.out.println(itemSize);
-        for(int i = 0; i < itemSize ; i++){
-            String optionsValue = optionsCount.get(i).getText();
-            System.out.println(optionsValue);
-
-        }
+        return optionsCount.size();
     }
 
     public void setCarMake(String carMake)
@@ -80,10 +75,11 @@ public class CarSearchPage extends BasePage{
         return getElement(this.carMakeHeading).getText().contains(carMake);
     }
 
-    public void displayTotalNumberofCars()
+    public int totalNumberofCarsDisplayed()
     {
-        String totalNumberofCars = getElement(this.noCarsReturunedHeading).getText().toString();
-        System.out.println("Total number of cars "+ totalNumberofCars);
-    }
+      String totalNumberofCars = getElement(this.noCarsReturunedHeading).getText().toString();
+      var totalCars = Integer.parseInt(totalNumberofCars.replaceAll("[^\\\\0-9+]", ""));
 
+      return totalCars;
+    }
 }

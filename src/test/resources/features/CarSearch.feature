@@ -16,14 +16,13 @@ Scenario: Verify the number of named car makes available
   @Positive
   Scenario: Verify the number of cars returned when search is based on particular make
     Given : User at the car search tab
-    When : User selects the car make from Car Details Excel Sheet for <rownumber>
+    When : User selects the car make from Car Details Excel Sheet for <CarMake>
     And : Click on Search button
-    Then : Cars are listed in the search list for <rownumber>
-    Then : Verify the number of cars returned in the search list
+    Then : Verify the number of cars returned in the search list for <CarMake>
 
     Examples:
-      | rownumber |
-      | 1         |
-      | 2         |
-      | 3         |
-      | 4         |
+      | CarMake |
+      | Ferrari |
+      | BMW     |
+      | Mazda   |
+      | Honda   |
